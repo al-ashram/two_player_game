@@ -1,7 +1,12 @@
-class Player
+class InvalidGuessError < StandardError
 
-attr_reader :score, :health, :id
-attr_accessor :name
+end
+
+
+class Player 
+
+  attr_reader :score, :health, :id
+  attr_accessor :name
 
   def initialize(id)
     @name = "default"
@@ -25,7 +30,29 @@ class Game
   def initialize
     puts "Welcome to a new game! Enter 'quit' to exit"
     initialize_players
+    ask_names
     start_game 
+  end
+
+  def ask_names
+    @players_array.each do |player|
+      puts "Player #{player.id} please enter your name"
+      @name = gets.chomp
+      puts "\n"
+
+      #if input is empty
+      while @name == ""
+        begin
+          raise "name can't be empty!!"
+        rescue
+          puts "Please re-enter name!!" 
+          @name = gets.chomp
+          puts "\n" 
+        end
+      end
+
+      player.name = @name
+    end
   end
 
   def initialize_players
@@ -40,7 +67,7 @@ class Game
   def start_game 
     loop do
       @players_array.each do |player|
-        generate_question(player.id)
+        generate_question(player.name)
         check_answer(player)
         display_full_results
         if game_over?(player)
@@ -51,28 +78,39 @@ class Game
     end
   end
 
-  def generate_question(player_number)
+  def generate_question(player_name)
     @first_number = ((1..20).to_a).sample
     @second_number = ((1..20).to_a).sample
-    puts "Player #{player_number}: #{@first_number} + #{@second_number}?"
+    puts "#{player_name}! What is #{@first_number} + #{@second_number}?"
   end
 
   def check_answer(player)
     @answer = gets.chomp
-    if @answer.downcase == 'quit'
-      exit
-    elsif @answer.to_i == @first_number + @second_number
+    exit if @answer == 'quit'
+     
+    #while input is a string  
+    while @answer.to_i.to_s != @answer
+      begin
+        raise InvalidGuessError, "must be a number!!!"
+      rescue
+        puts "Please enter a number!!" 
+        @answer = gets.chomp
+      end
+    end
+
+    if @answer.to_i == @first_number + @second_number
       puts "correct!"
       player.gain_a_point
     else
       puts "wrong!"
       player.lose_a_life
     end
+      
   end
 
   def display_full_results
     @players_array.each do |player|
-        puts "Player #{player.id} | score #{player.score} | health #{player.health}"
+        puts "#{player.name}: score #{player.score} , health #{player.health}"
     end
     puts "\n"
   end
@@ -84,3 +122,4 @@ class Game
 end
 
 new_game = Game.new
+
