@@ -1,56 +1,86 @@
-#this is OOP version
+class Player
+
+attr_reader :score, :health, :id
+attr_accessor :name
+
+  def initialize(id)
+    @name = "default"
+    @score = 0
+    @health = 3
+    @id = id
+  end
+
+  def gain_a_point
+    @score += 1
+  end
+
+  def lose_a_life
+    @health -= 1
+  end
+end
+
+
 class Game
 
-def initialize
-puts "Welcome to a new game!"
-@score = {"Player 1" => 3, "Player 2" =>3}
-
-  for i in 0..Float::INFINITY 
-    player_tracker(i)
-    generate_question(@player_number)
-    prompt_player_for_answer
-    verify_answer
-    game_over?(@score["Player #{@player_number}"])
-    break if @answer == "quit"
-    break if @over == true
+  def initialize
+    puts "Welcome to a new game! Enter 'quit' to exit"
+    initialize_players
+    start_game 
   end
-end
 
+  def initialize_players
+    player1 = Player.new(1)
+    player2 = Player.new(2)
+    
+    @players_array = Array.new
+    @players_array << player1
+    @players_array << player2
+  end
 
-def generate_question(player_number)
-@first_number = ((1..20).to_a).sample
-@second_number = ((1..20).to_a).sample
-
-puts "Player #{player_number}: What does #{@first_number} plus #{@second_number} equal?"
-end
-
-def prompt_player_for_answer
-@answer = gets.chomp
-end
-
-def verify_answer
-  if @answer.to_i == @first_number + @second_number
-    puts "correct!"
-  else
-    @score["Player #{@player_number}"] -= 1
-    print "Current Score is: "
-    @score.each do |player, score|
-      print "#{player} =>#{score} " 
+  def start_game 
+    loop do
+      @players_array.each do |player|
+        generate_question(player.id)
+        check_answer(player)
+        display_full_results
+        if game_over?(player)
+          puts "GAME OVER!!!!"
+          exit 
+        end
+      end
     end
-    print "\n"
   end
-end
 
-def player_tracker(round_number)
-  @player_number = round_number%2 + 1
-end
+  def generate_question(player_number)
+    @first_number = ((1..20).to_a).sample
+    @second_number = ((1..20).to_a).sample
+    puts "Player #{player_number}: #{@first_number} + #{@second_number}?"
+  end
 
-def game_over?(score)
-    score == 0 ? @over = true : @over = false
-end
+  def check_answer(player)
+    @answer = gets.chomp
+    if @answer.downcase == 'quit'
+      exit
+    elsif @answer.to_i == @first_number + @second_number
+      puts "correct!"
+      player.gain_a_point
+    else
+      puts "wrong!"
+      player.lose_a_life
+    end
+  end
+
+  def display_full_results
+    @players_array.each do |player|
+        puts "Player #{player.id} | score #{player.score} | health #{player.health}"
+    end
+    puts "\n"
+  end
+
+  def game_over?(player)
+    player.health == 0 
+  end
 
 end
 
 new_game = Game.new
-
-
