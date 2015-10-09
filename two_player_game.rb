@@ -1,3 +1,4 @@
+#this is OOP version
 class Game
 
 def initialize
